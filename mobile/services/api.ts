@@ -172,6 +172,10 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  async getSurveyAnalytics(surveyId: number) {
+    return this.request(`/surveys/${surveyId}/analytics`);
+  }
 }
 
 export default new ApiService();

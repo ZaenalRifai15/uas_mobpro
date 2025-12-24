@@ -98,6 +98,13 @@ export default function SurveyDetailScreen() {
           ))}
         </View>
 
+        <TouchableOpacity 
+          style={styles.analyticsButton} 
+          onPress={() => router.push(`/admin/surveys/analytics/${survey.id}`)}
+        >
+          <Text style={styles.analyticsButtonText}>📊 View Analytics & AI Insights</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.button} onPress={toggleStatus}>
           <Text style={styles.buttonText}>
             {survey.is_active ? 'Deactivate Survey' : 'Activate Survey'}
@@ -189,6 +196,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     fontStyle: 'italic',
+  },
+  analyticsButton: {
+    backgroundColor: '#34C759',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  analyticsButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   button: {
     backgroundColor: '#007AFF',
