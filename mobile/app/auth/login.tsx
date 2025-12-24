@@ -84,7 +84,7 @@ export default function LoginScreen() {
               disabled={loading}
             >
               <Text style={styles.linkText}>
-                Don't have an account? <Text style={styles.linkBold}>Register</Text>
+                Tidak Punya akun? <Text style={styles.linkBold}>Register</Text>
               </Text>
             </TouchableOpacity>
           </View>

@@ -55,9 +55,9 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<any> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(typeof options.headers === 'object' && options.headers !== null ? (options.headers as Record<string, string>) : {}),
     };
 
     if (this.token) {

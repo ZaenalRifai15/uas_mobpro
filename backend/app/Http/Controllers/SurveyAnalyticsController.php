@@ -6,6 +6,7 @@ use App\Models\SurveyAnalytics;
 use App\Models\Survey;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SurveyAnalyticsController extends Controller
 {
@@ -188,7 +189,7 @@ class SurveyAnalyticsController extends Controller
                     'questions' => $questionsStats,
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Gemini analysis error: ' . $e->getMessage());
+                Log::error('Gemini analysis error: ' . $e->getMessage());
             }
         }
         
