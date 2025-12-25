@@ -40,6 +40,11 @@ export interface Answer {
   answer: boolean;
 }
 
+export interface DeleteResponse {
+  success: boolean;
+  message: string;
+}
+
 class ApiService {
   private token: string | null = null;
 
@@ -65,31 +70,51 @@ class ApiService {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      // Try to read JSON error message if available, otherwise use generic message
-      let errorMsg = 'Request failed';
-      try {
-        const error = await response.json();
-        errorMsg = error.message || errorMsg;
-      } catch (_e) {
-        // ignore JSON parse errors for non-JSON error responses
-      }
-      throw new Error(errorMsg);
+    const url = `${API_URL}${endpoint}`;
+    console.log(`[API] Request: ${options.method || 'GET'} ${url}`);
+    console.log('[API] Headers:', headers);
+    if (options.body) {
+      console.log('[API] Body:', options.body);
     }
 
-    // Handle empty / no-content responses (e.g., 204) gracefully
-    const text = await response.text();
-    if (!text) return null;
     try {
-      return JSON.parse(text);
-    } catch (_e) {
-      // If response is not valid JSON, return the raw text
-      return text;
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      console.log(`[API] Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        // Try to read JSON error message if available, otherwise use generic message
+        let errorMsg = `Request failed with status ${response.status}`;
+        try {
+          const error = await response.json();
+          console.error('[API] Error response:', error);
+          errorMsg = error.message || errorMsg;
+        } catch (_e) {
+          console.error('[API] Could not parse error response as JSON');
+        }
+        throw new Error(errorMsg);
+      }
+
+      // Handle empty / no-content responses (e.g., 204) gracefully
+      const text = await response.text();
+      console.log('[API] Response text:', text);
+      
+      if (!text) return { success: true, message: 'Operation completed successfully' };
+      try {
+        const jsonData = JSON.parse(text);
+        console.log('[API] Parsed JSON:', jsonData);
+        return jsonData;
+      } catch (_e) {
+        console.warn('[API] Could not parse response as JSON, returning wrapped text');
+        // If response is not valid JSON, return the raw text wrapped in object
+        return { success: true, message: text };
+      }
+    } catch (error) {
+      console.error('[API] Request error:', error);
+      throw error;
     }
   }
 
@@ -135,10 +160,20 @@ class ApiService {
     });
   }
 
-  async deleteSurvey(id: number): Promise<void> {
-    return this.request(`/surveys/${id}`, {
-      method: 'DELETE',
-    });
+  async deleteSurvey(id: number): Promise<DeleteResponse> {
+    console.log('[API] deleteSurvey called with ID:', id);
+    console.log('[API] Request URL:', `${API_URL}/surveys/${id}`);
+    
+    try {
+      const result = await this.request(`/surveys/${id}`, {
+        method: 'DELETE',
+      });
+      console.log('[API] deleteSurvey response:', result);
+      return result;
+    } catch (error) {
+      console.error('[API] deleteSurvey error:', error);
+      throw error;
+    }
   }
 
   // Questions
@@ -153,7 +188,7 @@ class ApiService {
     });
   }
 
-  async deleteQuestion(id: number): Promise<void> {
+  async deleteQuestion(id: number): Promise<DeleteResponse> {
     return this.request(`/questions/${id}`, {
       method: 'DELETE',
     });

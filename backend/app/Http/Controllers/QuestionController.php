@@ -61,7 +61,23 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
-        $question->delete();
-        return response()->json(['message' => 'Question deleted successfully']);
+        try {
+            // Explicitly delete all answers related to this question
+            $question->answers()->delete();
+            
+            // Delete the question
+            $question->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Question deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete question',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -11,6 +11,7 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -43,27 +44,86 @@ export default function AdminSurveysScreen() {
     loadSurveys();
   };
 
-  const handleDeleteSurvey = (id: number, title: string) => {
-    Alert.alert(
-      'Hapus Survei',
-      `Apakah Anda yakin ingin menghapus "${title}"?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await apiService.deleteSurvey(id);
-              loadSurveys();
-              Alert.alert('Sukses', 'Survei berhasil dihapus');
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete survey');
-            }
+  const handleDeleteSurvey = async (id: number, title: string) => {
+    console.log('handleDeleteSurvey called for:', id, title);
+    console.log('Platform:', Platform.OS);
+    
+    // For web, use window.confirm since Alert.alert doesn't work
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `Apakah Anda yakin ingin menghapus "${title}"?\n\nSemua data terkait (pertanyaan, jawaban, dan analisis) akan ikut terhapus.`
+      );
+      
+      if (!confirmed) {
+        console.log('Delete cancelled by user');
+        return;
+      }
+
+      console.log('User confirmed delete, starting deletion for ID:', id);
+      try {
+        console.log('Calling apiService.deleteSurvey with ID:', id);
+        const result = await apiService.deleteSurvey(id);
+        console.log('Delete API response:', JSON.stringify(result));
+        
+        alert(result?.message || 'Survei berhasil dihapus');
+        console.log('Reloading surveys list');
+        loadSurveys();
+      } catch (error: any) {
+        console.error('Delete error caught:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        alert(`Gagal menghapus survey: ${error.message || 'Unknown error'}`);
+      }
+    } else {
+      // For mobile, use Alert.alert
+      Alert.alert(
+        'Hapus Survei',
+        `Apakah Anda yakin ingin menghapus "${title}"?\n\nSemua data terkait (pertanyaan, jawaban, dan analisis) akan ikut terhapus.`,
+        [
+          { 
+            text: 'Batal', 
+            style: 'cancel',
+            onPress: () => console.log('Delete cancelled by user')
           },
-        },
-      ]
-    );
+          {
+            text: 'Hapus',
+            style: 'destructive',
+            onPress: async () => {
+              console.log('User confirmed delete, starting deletion for ID:', id);
+              try {
+                console.log('Calling apiService.deleteSurvey with ID:', id);
+                const result = await apiService.deleteSurvey(id);
+                console.log('Delete API response:', JSON.stringify(result));
+                
+                Alert.alert(
+                  'Sukses', 
+                  result?.message || 'Survei berhasil dihapus',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        console.log('Reloading surveys list');
+                        loadSurveys();
+                      },
+                    },
+                  ]
+                );
+              } catch (error: any) {
+                console.error('Delete error caught:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                
+                Alert.alert(
+                  'Error', 
+                  `Gagal menghapus survey: ${error.message || 'Unknown error'}`
+                );
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   const renderSurvey = ({ item }: { item: Survey }) => (
@@ -77,12 +137,21 @@ export default function AdminSurveysScreen() {
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.viewButton}
-        onPress={() => router.push(`/admin/surveys/${item.id}`)}
-      >
-        <Text style={styles.viewButtonText}>Lihat Hasil Survey</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={styles.viewButton}
+          onPress={() => router.push(`/admin/surveys/${item.id}`)}
+        >
+          <Text style={styles.viewButtonText}>Lihat Hasil</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButtonSmall}
+          onPress={() => handleDeleteSurvey(item.id, item.title)}
+        >
+          <Text style={styles.deleteButtonSmallText}>🗑️ Hapus</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -319,8 +388,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
+  /* Button Row */
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
   /* View Button */
   viewButton: {
+    flex: 1,
     backgroundColor: '#ff9e64',
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -328,6 +404,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   viewButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+  },
+
+  /* Delete Button Small */
+  deleteButtonSmall: {
+    backgroundColor: '#EF4444',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
+  },
+  deleteButtonSmallText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#fff',

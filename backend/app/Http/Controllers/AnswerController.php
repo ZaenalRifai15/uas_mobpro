@@ -71,7 +71,19 @@ class AnswerController extends Controller
      */
     public function destroy(Answer $answer)
     {
-        $answer->delete();
-        return response()->json(['message' => 'Answer deleted successfully']);
+        try {
+            $answer->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Answer deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete answer',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -71,7 +71,23 @@ class ResponseController extends Controller
      */
     public function destroy(Response $response)
     {
-        $response->delete();
-        return response()->json(['message' => 'Response deleted successfully']);
+        try {
+            // Delete all answers related to this response
+            $response->answers()->delete();
+            
+            // Delete the response
+            $response->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Response deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete response',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

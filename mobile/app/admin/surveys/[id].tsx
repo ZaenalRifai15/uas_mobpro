@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import apiService, { Survey } from '@/services/api';
@@ -50,33 +51,92 @@ export default function SurveyDetailScreen() {
   const deleteSurvey = async () => {
     if (!survey) return;
 
-    Alert.alert(
-      'Hapus Survey',
-      'Apakah Anda yakin ingin menghapus survey ini? Tindakan ini tidak dapat dibatalkan.',
-      [
-        {
-          text: 'Batal',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {
-          text: 'Hapus',
-          onPress: async () => {
-            setIsDeleting(true);
-            try {
-              await apiService.deleteSurvey(survey.id);
-              Alert.alert('Berhasil', 'Survey berhasil dihapus');
-              // Navigate back to the surveys list and replace current route so the list reloads
-              router.replace('/admin/surveys');
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete survey');
-              setIsDeleting(false);
-            }
+    console.log('deleteSurvey called for survey:', survey.id, survey.title);
+    console.log('Platform:', Platform.OS);
+
+    // For web, use window.confirm since Alert.alert doesn't work
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `Apakah Anda yakin ingin menghapus survey "${survey.title}"?\n\nTindakan ini tidak dapat dibatalkan.`
+      );
+      
+      if (!confirmed) {
+        console.log('Delete cancelled by user');
+        return;
+      }
+
+      console.log('User confirmed delete, starting deletion...');
+      setIsDeleting(true);
+      
+      try {
+        console.log('Calling apiService.deleteSurvey with ID:', survey.id);
+        const result = await apiService.deleteSurvey(survey.id);
+        console.log('Delete API response:', JSON.stringify(result));
+        
+        alert(result?.message || 'Survey dan semua data terkait berhasil dihapus');
+        console.log('Navigating back to surveys list');
+        router.replace('/admin/surveys');
+      } catch (error: any) {
+        console.error('Delete error caught:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        alert(`Gagal menghapus survey: ${error.message || 'Unknown error'}`);
+        setIsDeleting(false);
+      }
+    } else {
+      // For mobile, use Alert.alert
+      Alert.alert(
+        'Hapus Survey',
+        'Apakah Anda yakin ingin menghapus survey ini? Tindakan ini tidak dapat dibatalkan.',
+        [
+          {
+            text: 'Batal',
+            onPress: () => {
+              console.log('Delete cancelled by user');
+            },
+            style: 'cancel',
           },
-          style: 'destructive',
-        },
-      ]
-    );
+          {
+            text: 'Hapus',
+            onPress: async () => {
+              console.log('User confirmed delete, starting deletion...');
+              setIsDeleting(true);
+              try {
+                console.log('Calling apiService.deleteSurvey with ID:', survey.id);
+                const result = await apiService.deleteSurvey(survey.id);
+                console.log('Delete API response:', JSON.stringify(result));
+                
+                Alert.alert(
+                  'Berhasil', 
+                  result?.message || 'Survey dan semua data terkait berhasil dihapus',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        console.log('Navigating back to surveys list');
+                        router.replace('/admin/surveys');
+                      },
+                    },
+                  ]
+                );
+              } catch (error: any) {
+                console.error('Delete error caught:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                
+                Alert.alert(
+                  'Error', 
+                  `Gagal menghapus survey: ${error.message || 'Unknown error'}`
+                );
+                setIsDeleting(false);
+              }
+            },
+            style: 'destructive',
+          },
+        ]
+      );
+    }
   };
 
   if (loading) {
