@@ -7,6 +7,9 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  SafeAreaView,
+  StatusBar,
+  TextInput,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -16,17 +19,17 @@ export default function TakeSurveyScreen() {
   const { id } = useLocalSearchParams();
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [answers, setAnswers] = useState<{ [key: number]: boolean }>({});
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [alreadyResponded, setAlreadyResponded] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     loadSurvey();
     checkIfAlreadyResponded();
   }, [id]);
 
-  // Check if user already responded to this survey
   const checkIfAlreadyResponded = async () => {
     if (!user) return;
     try {
@@ -64,25 +67,22 @@ export default function TakeSurveyScreen() {
   const handleSubmit = async () => {
     if (!survey || !user) return;
 
-    // Check if all questions are answered
     const unansweredQuestions = survey.questions?.filter(
       (q) => answers[q.id] === undefined
     );
 
     if (unansweredQuestions && unansweredQuestions.length > 0) {
-      Alert.alert('Error', 'Please answer all questions');
+      Alert.alert('Error', 'Mohon jawab semua pertanyaan');
       return;
     }
 
     setSubmitting(true);
     try {
-      // Create response
       const response = await apiService.createResponse({
         survey_id: survey.id,
         user_id: user.id,
       });
 
-      // Submit answers
       for (const question of survey.questions || []) {
         await apiService.createAnswer({
           response_id: response.id,
@@ -91,7 +91,6 @@ export default function TakeSurveyScreen() {
         });
       }
 
-      // Show thank you confirmation
       Alert.alert(
         'Terima Kasih!',
         'Terima Kasih Telah Mengisi Survey.\n\nRespon Anda Sangat Berarti Untuk Perubahan dan Kemajuan Kampus.',
@@ -104,7 +103,7 @@ export default function TakeSurveyScreen() {
       );
     } catch (error: any) {
       if (error.message.includes('already responded')) {
-        Alert.alert('Already Submitted', 'You have already responded to this survey');
+        Alert.alert('Sudah Diisi', 'Anda sudah mengisi survey ini sebelumnya');
         router.back();
       } else {
         Alert.alert('Error', error.message || 'Failed to submit response');
@@ -117,25 +116,24 @@ export default function TakeSurveyScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#ff9e64" />
       </View>
     );
   }
 
-  // Show message if already responded
   if (alreadyResponded) {
     return (
       <View style={styles.centerContainer}>
         <View style={styles.messageCard}>
-          <Text style={styles.messageTitle}>Already Responded</Text>
+          <Text style={styles.messageTitle}>Sudah Diisi</Text>
           <Text style={styles.messageText}>
-            You have already submitted your response to this survey.
+            Anda sudah mengisi survey ini sebelumnya.
           </Text>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backButtonText}>Back to Surveys</Text>
+            <Text style={styles.backButtonText}>Kembali ke Survei</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -145,23 +143,39 @@ export default function TakeSurveyScreen() {
   if (!survey) {
     return (
       <View style={styles.centerContainer}>
-        <Text>Survey not found</Text>
+        <Text>Survey tidak ditemukan</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>{survey.title}</Text>
-        {survey.description && (
-          <Text style={styles.description}>{survey.description}</Text>
-        )}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3a5f" />
 
-        <View style={styles.questionsContainer}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonIcon}>←</Text>
+        </TouchableOpacity>
+
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>{survey.title}</Text>
+          {survey.description && (
+            <Text style={styles.headerDescription}>{survey.description}</Text>
+          )}
+        </View>
+
+        <View style={styles.orangeCircle} />
+      </View>
+
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.content}>
+          {/* Questions */}
           {survey.questions?.map((question, index) => (
             <View key={question.id} style={styles.questionCard}>
-              <Text style={styles.questionNumber}>Question {index + 1}</Text>
               <Text style={styles.questionText}>{question.question_text}</Text>
 
               <View style={styles.answersContainer}>
@@ -215,29 +229,44 @@ export default function TakeSurveyScreen() {
               </View>
             </View>
           ))}
+
+          {/* Notes Section */}
+          <View style={styles.notesCard}>
+            <TextInput
+              style={styles.notesInput}
+              placeholder="Saran dan masukan"
+              placeholderTextColor="#666"
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              numberOfLines={5}
+              editable={!submitting}
+            />
+          </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[styles.submitButton, submitting && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Kirim</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.replace('/user/surveys')}
+            disabled={submitting}
+          >
+            <Text style={styles.cancelButtonText}>Batalkan</Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={[styles.submitButton, submitting && styles.buttonDisabled]}
-          onPress={handleSubmit}
-          disabled={submitting}
-        >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>Submit Response</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => router.back()}
-          disabled={submitting}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -245,6 +274,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  scrollContainer: {
+    flex: 1,
   },
   centerContainer: {
     flex: 1,
@@ -267,8 +299,8 @@ const styles = StyleSheet.create({
   },
   messageTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FF9500',
+    fontWeight: '700',
+    color: '#1e3a5f',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -279,99 +311,152 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
+
+  /* Header */
+  headerContainer: {
+    backgroundColor: '#1e3a5f',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    position: 'relative',
+    overflow: 'hidden',
+  },
   backButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
+    padding: 8,
+    marginBottom: 12,
+    zIndex: 10,
   },
   backButtonText: {
-    color: '#fff',
     fontSize: 16,
+    color: '#000000ff',
     fontWeight: '600',
   },
-  content: {
-    padding: 20,
+  backButtonIcon: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: '600',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+  headerContent: {
+    zIndex: 2,
+    paddingRight: 20,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#fff',
+    lineHeight: 32,
     marginBottom: 8,
   },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+  headerDescription: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 20,
   },
-  questionsContainer: {
-    marginBottom: 20,
+
+  /* Orange Circle */
+  orangeCircle: {
+    position: 'absolute',
+    right: -80,
+    top: -60,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: '#ff9e64',
+    opacity: 0.85,
+    zIndex: 0,
   },
+
+  /* Content */
+  content: {
+    padding: 15,
+  },
+
+  /* Question Card */
   questionCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    backgroundColor: '#b8cfe8',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  questionNumber: {
-    fontSize: 12,
-    color: '#007AFF',
-    fontWeight: '600',
-    marginBottom: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   questionText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 16,
-    lineHeight: 22,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1e3a5f',
+    marginBottom: 12,
+    lineHeight: 20,
   },
   answersContainer: {
-    gap: 10,
+    gap: 12,
   },
   answerButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#fff',
-  },
-  answerButtonSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#E6F4FF',
-  },
-  radio: {
-    width: 20,
-    height: 20,
+    padding: 10,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: 'transparent',
+    backgroundColor: 'transparent',
+  },
+  answerButtonSelected: {
+    backgroundColor: 'rgba(30, 58, 95, 0.1)',
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#1e3a5f',
     marginRight: 12,
   },
   radioSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#007AFF',
+    borderColor: '#1e3a5f',
+    backgroundColor: '#1e3a5f',
   },
   answerText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: 15,
+    color: '#1e3a5f',
+    fontWeight: '500',
   },
   answerTextSelected: {
-    color: '#007AFF',
+    color: '#1e3a5f',
     fontWeight: '600',
   },
+
+  /* Notes */
+  notesCard: {
+    backgroundColor: '#b8cfe8',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  notesInput: {
+    fontSize: 14,
+    color: '#1e3a5f',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    textAlignVertical: 'top',
+    minHeight: 100,
+  },
+
+  /* Buttons */
   submitButton: {
-    backgroundColor: '#34C759',
-    padding: 16,
-    borderRadius: 10,
+    backgroundColor: '#ff9e64',
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 10,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -382,10 +467,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cancelButton: {
-    padding: 16,
-    borderRadius: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 20,
   },
   cancelButtonText: {
     color: '#666',
