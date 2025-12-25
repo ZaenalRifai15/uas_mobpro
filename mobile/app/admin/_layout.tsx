@@ -6,6 +6,7 @@ export default function AdminLayout() {
       <Stack.Screen name="surveys/index" />
       <Stack.Screen name="surveys/create" />
       <Stack.Screen name="surveys/[id]" />
+      <Stack.Screen name="surveys/create_success" />
     </Stack>
   );
 }

@@ -66,7 +66,8 @@ export default function SurveyDetailScreen() {
             try {
               await apiService.deleteSurvey(survey.id);
               Alert.alert('Berhasil', 'Survey berhasil dihapus');
-              router.back();
+              // Navigate back to the surveys list and replace current route so the list reloads
+              router.replace('/admin/surveys');
             } catch (error: any) {
               Alert.alert('Error', error.message || 'Failed to delete survey');
               setIsDeleting(false);

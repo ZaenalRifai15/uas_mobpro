@@ -54,7 +54,7 @@ export default function UserSurveysScreen() {
   const renderSurvey = ({ item }: { item: Survey }) => (
     <View style={styles.surveyCard}>
       <View style={styles.cardContent}>
-        <Text style={styles.surveyTitle}>{item.title}</Text>
+        <Text style={styles.surveyTitle} numberOfLines={2}>{item.title}</Text>
         {item.description && (
           <Text style={styles.surveyDescription} numberOfLines={3}>
             {item.description}
@@ -62,10 +62,10 @@ export default function UserSurveysScreen() {
         )}
       </View>
       <TouchableOpacity
-        style={styles.ikutiButton}
+        style={styles.viewButton}
         onPress={() => router.push(`/user/surveys/${item.id}`)}
       >
-        <Text style={styles.ikutiButtonText}>Ikuti</Text>
+        <Text style={styles.viewButtonText}>Isi Survey</Text>
       </TouchableOpacity>
     </View>
   );
@@ -89,7 +89,7 @@ export default function UserSurveysScreen() {
             <Text style={styles.menuIcon}>☰</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-             <Text style={styles.logoutIcon}>↪</Text>
+            <Text style={styles.logoutIcon}>⎋</Text>
           </TouchableOpacity>
         </View>
 
@@ -100,6 +100,15 @@ export default function UserSurveysScreen() {
             <Text style={styles.headerSubtitle}>Selamat datang KampusQ</Text>
           </View>
 
+          {/* Magnifying Glass Illustration */}
+          <View style={styles.illustrationContainer}>
+            <Image
+              source={require('@/assets/images/survey_logo.png')}
+              style={styles.magnifyingGlass}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
 
         {/* Orange Circle Background */}
         <View style={styles.orangeCircle} />
@@ -116,7 +125,6 @@ export default function UserSurveysScreen() {
               onChangeText={setSearchQuery}
             />
           </View>
-        </View>
         </View>
       </View>
 
@@ -182,7 +190,6 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 8,
-    zIndex: 10,
   },
   logoutIcon: {
     fontSize: 22,
@@ -247,18 +254,18 @@ const styles = StyleSheet.create({
   searchBarWrapper: {
     position: 'relative',
     zIndex: 3,
-    marginHorizontal: -20,
-    marginLeft: 20,
-    marginRight: 20,
-    marginTop: 50,
+    marginHorizontal: 0,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.38)',
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginHorizontal: -20,
+    marginLeft: 20,
+    marginRight: 20,
   },
   searchIcon: {
     fontSize: 18,
@@ -267,7 +274,8 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
+    fontWeight: '600',
   },
 
   /* List Content */
@@ -290,7 +298,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardContent: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   surveyTitle: {
     fontSize: 16,
@@ -305,16 +313,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  /* Ikuti Button */
-  ikutiButton: {
+  /* View Button */
+  viewButton: {
     backgroundColor: '#ff9e64',
     paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
-    alignSelf: 'flex-end',
   },
-  ikutiButtonText: {
+  viewButtonText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#fff',

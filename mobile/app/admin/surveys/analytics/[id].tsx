@@ -75,7 +75,7 @@ export default function SurveyAnalyticsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#3B82F6" />
           <Text style={styles.loadingText}>Memuat Analytics...</Text>
           <Text style={styles.loadingSubtext}>Menganalisis data survei dengan AI</Text>
         </View>
@@ -86,7 +86,7 @@ export default function SurveyAnalyticsScreen() {
   if (!analytics) {
     return (
       <View style={styles.centerContainer}>
-        <Text>No analytics data available</Text>
+        <Text style={styles.emptyText}>No analytics data available</Text>
       </View>
     );
   }
@@ -94,198 +94,164 @@ export default function SurveyAnalyticsScreen() {
   const { survey, statistics, questions_stats, gemini_analysis } = analytics;
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.content}>
-        {/* Survey Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{survey.title}</Text>
-          <View style={styles.statusBadge}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: survey.is_active ? '#34C759' : '#FF3B30' },
-              ]}
-            />
-            <Text style={styles.statusText}>
-              {survey.is_active ? 'Active' : 'Inactive'}
-            </Text>
-          </View>
+    <View style={styles.container}>
+      {/* Header dengan gradient background */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerSubtitle}>Detail Survey</Text>
+          <Text style={styles.headerTitle}>{survey.title}</Text>
           {survey.description && (
-            <Text style={styles.description}>{survey.description}</Text>
+            <Text style={styles.headerDescription}>{survey.description}</Text>
           )}
         </View>
-
-        {/* Overall Statistics */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overall Statistics</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{statistics.total_responden}</Text>
-              <Text style={styles.statLabel}>Total Responden</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{statistics.total_pertanyaan}</Text>
-              <Text style={styles.statLabel}>Total Questions</Text>
-            </View>
-          </View>
-
-          <View style={styles.answersCard}>
-            <View style={styles.answerRow}>
-              <View style={styles.answerInfo}>
-                <View style={[styles.answerDot, { backgroundColor: '#34C759' }]} />
-                <Text style={styles.answerLabel}>Setuju</Text>
-              </View>
-              <Text style={styles.answerValue}>
-                {statistics.total_setuju} ({statistics.setuju_percentage}%)
-              </Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${statistics.setuju_percentage}%`,
-                    backgroundColor: '#34C759',
-                  },
-                ]}
-              />
-            </View>
-
-            <View style={styles.answerRow}>
-              <View style={styles.answerInfo}>
-                <View style={[styles.answerDot, { backgroundColor: '#FF3B30' }]} />
-                <Text style={styles.answerLabel}>Tidak Setuju</Text>
-              </View>
-              <Text style={styles.answerValue}>
-                {statistics.total_tidak_setuju} ({statistics.tidak_setuju_percentage}%)
-              </Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${statistics.tidak_setuju_percentage}%`,
-                    backgroundColor: '#FF3B30',
-                  },
-                ]}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Per Question Statistics */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Statistics per Question</Text>
-          {questions_stats.map((question, index) => (
-            <View key={question.question_id} style={styles.questionCard}>
-              <Text style={styles.questionNumber}>Question {index + 1}</Text>
-              <Text style={styles.questionText}>{question.question_text}</Text>
-
-              <View style={styles.questionStats}>
-                <View style={styles.statRow}>
-                  <View style={styles.statRowHeader}>
-                    <View
-                      style={[styles.statDot, { backgroundColor: '#34C759' }]}
-                    />
-                    <Text style={styles.statRowLabel}>Setuju</Text>
-                  </View>
-                  <Text style={styles.statRowValue}>
-                    {question.setuju} ({question.setuju_percentage}%)
-                  </Text>
-                </View>
-                <View style={styles.miniProgressBar}>
-                  <View
-                    style={[
-                      styles.miniProgressFill,
-                      {
-                        width: `${question.setuju_percentage}%`,
-                        backgroundColor: '#34C759',
-                      },
-                    ]}
-                  />
-                </View>
-
-                <View style={styles.statRow}>
-                  <View style={styles.statRowHeader}>
-                    <View
-                      style={[styles.statDot, { backgroundColor: '#FF3B30' }]}
-                    />
-                    <Text style={styles.statRowLabel}>Tidak Setuju</Text>
-                  </View>
-                  <Text style={styles.statRowValue}>
-                    {question.tidak_setuju} ({question.tidak_setuju_percentage}%)
-                  </Text>
-                </View>
-                <View style={styles.miniProgressBar}>
-                  <View
-                    style={[
-                      styles.miniProgressFill,
-                      {
-                        width: `${question.tidak_setuju_percentage}%`,
-                        backgroundColor: '#FF3B30',
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Gemini AI Analysis */}
-        {gemini_analysis && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>AI Analysis by Gemini</Text>
-            
-            <View style={styles.analysisCard}>
-              <Text style={styles.analysisTitle}>Summary</Text>
-              <Text style={styles.analysisText}>{gemini_analysis.summary}</Text>
-            </View>
-
-            <View style={styles.analysisCard}>
-              <Text style={styles.analysisTitle}>Insight & Recommendations</Text>
-              <Text style={styles.analysisText}>{gemini_analysis.insight}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Actions */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>Back to Surveys</Text>
-        </TouchableOpacity>
       </View>
-    </ScrollView>
+
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.content}>
+          {/* Challenge Badge */}
+          <View style={styles.challengeCard}>
+            <View style={styles.challengeIcon}>
+              <Text style={styles.challengeIconText}>🎯</Text>
+            </View>
+            <Text style={styles.challengeTitle}>Challenge!</Text>
+            <Text style={styles.challengeDescription}>
+              {survey.description || 'Selesaikan semua pertanyaan untuk mendapatkan insight yang lengkap'}
+            </Text>
+          </View>
+
+          {/* Overall Statistics */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pertanyaan ({statistics.total_pertanyaan})</Text>
+            
+            {/* Stats Summary Cards */}
+            <View style={styles.statsRow}>
+              <View style={styles.statMiniCard}>
+                <Text style={styles.statMiniValue}>{statistics.total_responden}</Text>
+                <Text style={styles.statMiniLabel}>Total Responden</Text>
+              </View>
+              <View style={styles.statMiniCard}>
+                <Text style={[styles.statMiniValue, { color: '#10B981' }]}>
+                  {statistics.setuju_percentage}%
+                </Text>
+                <Text style={styles.statMiniLabel}>Setuju</Text>
+              </View>
+              <View style={styles.statMiniCard}>
+                <Text style={[styles.statMiniValue, { color: '#EF4444' }]}>
+                  {statistics.tidak_setuju_percentage}%
+                </Text>
+                <Text style={styles.statMiniLabel}>Tidak Setuju</Text>
+              </View>
+            </View>
+
+            {/* Per Question Cards */}
+            {questions_stats.map((question, index) => (
+              <View key={question.question_id} style={styles.questionCard}>
+                <View style={styles.questionHeader}>
+                  <Text style={styles.questionLabel}>PERTANYAAN {index + 1}</Text>
+                </View>
+                <Text style={styles.questionText}>{question.question_text}</Text>
+                
+                <View style={styles.answersContainer}>
+                  {/* Setuju */}
+                  <View style={styles.answerItem}>
+                    <View style={styles.answerBadge}>
+                      <Text style={styles.answerBadgeText}>Setuju</Text>
+                    </View>
+                    <View style={styles.answerStats}>
+                      <Text style={styles.answerCount}>{question.setuju}</Text>
+                      <Text style={styles.answerPercentage}>
+                        ({question.setuju_percentage}%)
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Tidak Setuju */}
+                  <View style={styles.answerItem}>
+                    <View style={[styles.answerBadge, styles.answerBadgeNo]}>
+                      <Text style={styles.answerBadgeText}>Tidak Setuju</Text>
+                    </View>
+                    <View style={styles.answerStats}>
+                      <Text style={styles.answerCount}>{question.tidak_setuju}</Text>
+                      <Text style={styles.answerPercentage}>
+                        ({question.tidak_setuju_percentage}%)
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Gemini AI Analysis */}
+          {gemini_analysis && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>AI Analysis</Text>
+              
+              <View style={styles.analysisCard}>
+                <View style={styles.analysisHeader}>
+                  <Text style={styles.analysisIcon}>🤖</Text>
+                  <Text style={styles.analysisLabel}>Gemini AI Insights</Text>
+                </View>
+                
+                <View style={styles.analysisSection}>
+                  <Text style={styles.analysisSubtitle}>Summary</Text>
+                  <Text style={styles.analysisText}>{gemini_analysis.summary}</Text>
+                </View>
+
+                <View style={styles.analysisDivider} />
+
+                <View style={styles.analysisSection}>
+                  <Text style={styles.analysisSubtitle}>Insight & Recommendations</Text>
+                  <Text style={styles.analysisText}>{gemini_analysis.insight}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.primaryButtonText}>Kembali</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8FAFC',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748B',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   loadingCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 32,
     borderRadius: 16,
     alignItems: 'center',
@@ -300,221 +266,272 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1E293B',
   },
   loadingSubtext: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
+  },
+  headerContainer: {
+    backgroundColor: '#334155',
+    paddingTop: 30,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  headerContent: {
+    marginBottom: 0,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  headerDescription: {
+    fontSize: 14,
+    color: '#CBD5E1',
+    lineHeight: 20,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: 20,
   },
-  header: {
+  challengeCard: {
+    backgroundColor: '#DBEAFE',
+    padding: 20,
+    borderRadius: 12,
     marginBottom: 24,
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    flexDirection: 'row',
+  challengeIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
+  challengeIconText: {
+    fontSize: 24,
   },
-  statusText: {
+  challengeTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1E40AF',
+    marginBottom: 8,
+  },
+  challengeDescription: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '600',
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
+    color: '#1E3A8A',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#1E293B',
     marginBottom: 16,
   },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
   },
-  statCard: {
+  statMiniCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  statValue: {
-    fontSize: 32,
+  statMiniValue: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#3B82F6',
     marginBottom: 4,
   },
-  statLabel: {
-    fontSize: 12,
-    color: '#666',
+  statMiniLabel: {
+    fontSize: 11,
+    color: '#64748B',
     textAlign: 'center',
   },
-  answersCard: {
-    backgroundColor: '#fff',
+  questionCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  questionHeader: {
+    marginBottom: 12,
+  },
+  questionLabel: {
+    fontSize: 11,
+    color: '#3B82F6',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  questionText: {
+    fontSize: 15,
+    color: '#1E293B',
+    fontWeight: '500',
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  answersContainer: {
+    gap: 10,
+  },
+  answerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  answerBadge: {
+    backgroundColor: '#DBEAFE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  answerBadgeNo: {
+    backgroundColor: '#FEE2E2',
+  },
+  answerBadgeText: {
+    fontSize: 12,
+    color: '#1E293B',
+    fontWeight: '600',
+  },
+  answerStats: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  answerCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  answerPercentage: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  analysisCard: {
+    backgroundColor: '#FFFFFF',
     padding: 20,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
-  answerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  answerInfo: {
+  analysisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  answerDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  answerLabel: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  answerValue: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 4,
-    overflow: 'hidden',
     marginBottom: 16,
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
+  analysisIcon: {
+    fontSize: 24,
+    marginRight: 8,
   },
-  questionCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  questionNumber: {
-    fontSize: 12,
-    color: '#007AFF',
-    fontWeight: '600',
-    marginBottom: 6,
-  },
-  questionText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-    marginBottom: 12,
-  },
-  questionStats: {
-    marginTop: 8,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  statRowHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  statRowLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  statRowValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-  },
-  miniProgressBar: {
-    height: 6,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  miniProgressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  analysisCard: {
-    backgroundColor: '#E6F4FF',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  analysisTitle: {
+  analysisLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#1E293B',
+  },
+  analysisSection: {
+    marginBottom: 16,
+  },
+  analysisDivider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginVertical: 16,
+  },
+  analysisSubtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3B82F6',
     marginBottom: 8,
   },
   analysisText: {
     fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
+    color: '#475569',
+    lineHeight: 22,
   },
-  backButton: {
+  actionButtons: {
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 32,
+  },
+  primaryButton: {
+    backgroundColor: '#F97316',
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
-    backgroundColor: '#fff',
+    shadowColor: '#F97316',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  backButtonText: {
-    color: '#666',
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#DC2626',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  secondaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tertiaryButton: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  tertiaryButtonText: {
+    color: '#64748B',
     fontSize: 16,
     fontWeight: '600',
   },

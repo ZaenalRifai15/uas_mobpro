@@ -71,11 +71,26 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Request failed');
+      // Try to read JSON error message if available, otherwise use generic message
+      let errorMsg = 'Request failed';
+      try {
+        const error = await response.json();
+        errorMsg = error.message || errorMsg;
+      } catch (_e) {
+        // ignore JSON parse errors for non-JSON error responses
+      }
+      throw new Error(errorMsg);
     }
 
-    return response.json();
+    // Handle empty / no-content responses (e.g., 204) gracefully
+    const text = await response.text();
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch (_e) {
+      // If response is not valid JSON, return the raw text
+      return text;
+    }
   }
 
   // Auth

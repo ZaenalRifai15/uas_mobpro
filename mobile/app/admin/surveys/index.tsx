@@ -105,7 +105,7 @@ export default function AdminSurveysScreen() {
             <Text style={styles.menuIcon}>☰</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-            <Text style={styles.logoutIcon}>↪</Text>
+            <Text style={styles.logoutIcon}>⎋</Text>
           </TouchableOpacity>
         </View>
 
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   logoutIcon: {
-    fontSize: 22,
+    fontSize: 32,
     color: '#fff',
   },
 
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
   },
   createSurveyButton: {
-    backgroundColor: 'rgba(255, 158, 100, 0.95)',
+    backgroundColor: '#0C203B4A',
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 24,
