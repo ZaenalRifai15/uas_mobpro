@@ -120,7 +120,7 @@ export default function CreateSurveyScreen() {
                   style={styles.logo}
                   resizeMode="contain"
                 />
-                <Text style={styles.headerTitle}>{title || 'KampusQ'}</Text>
+                <Text style={styles.headerTitle}>KampusQ</Text>
               </View>
               <TouchableOpacity style={styles.settingsButton}>
                 <Text style={styles.settingsIcon}>⚙️</Text>

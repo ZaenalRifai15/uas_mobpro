@@ -156,103 +156,111 @@ export default function SurveyDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      {/* Fixed Header */}
       <View style={styles.headerBanner}>
         <Text style={styles.headerGreeting}>Detail Survey</Text>
         <Text style={styles.surveyTitle}>{survey.title}</Text>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.statusContainer}>
-          <View
-            style={[
-              styles.statusBadge,
-              { 
-                backgroundColor: survey.is_active ? '#D4E8F5' : '#FFE8E8',
-                borderLeftColor: survey.is_active ? '#5B7BA6' : '#E8947D',
-              },
-            ]}
-          >
+      {/* Scrollable Content */}
+      <ScrollView 
+        style={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContentContainer}
+      >
+        <View style={styles.content}>
+          <View style={styles.statusContainer}>
             <View
               style={[
-                styles.statusDot,
-                { backgroundColor: survey.is_active ? '#5B7BA6' : '#E8947D' },
-              ]}
-            />
-            <Text 
-              style={[
-                styles.statusText,
-                { color: survey.is_active ? '#5B7BA6' : '#E8947D' },
+                styles.statusBadge,
+                { 
+                  backgroundColor: survey.is_active ? '#D4E8F5' : '#FFE8E8',
+                  borderLeftColor: survey.is_active ? '#5B7BA6' : '#E8947D',
+                },
               ]}
             >
-              {survey.is_active ? 'Aktif' : 'Tidak Aktif'}
-            </Text>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: survey.is_active ? '#5B7BA6' : '#E8947D' },
+                ]}
+              />
+              <Text 
+                style={[
+                  styles.statusText,
+                  { color: survey.is_active ? '#5B7BA6' : '#E8947D' },
+                ]}
+              >
+                {survey.is_active ? 'Aktif' : 'Tidak Aktif'}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {survey.description && (
-          <View style={styles.descriptionCard}>
-            <Text style={styles.cardTitle}>Deskripsi</Text>
-            <Text style={styles.descriptionText}>{survey.description}</Text>
-          </View>
-        )}
-
-        {survey.questions && survey.questions.length > 0 && (
-          <View style={styles.questionsSection}>
-            <Text style={styles.sectionHeader}>Pertanyaan ({survey.questions.length})</Text>
-            {survey.questions.map((question, index) => (
-              <View key={question.id} style={styles.questionCard}>
-                <Text style={styles.questionNumber}>Pertanyaan {index + 1}</Text>
-                <Text style={styles.questionText}>{question.question_text}</Text>
-                <Text style={styles.answerType}>Jawaban: Setuju / Tidak Setuju</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <TouchableOpacity 
-          style={styles.analyticsButton} 
-          onPress={() => router.push(`/admin/surveys/analytics/${survey.id}`)}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.analyticsButtonText}>Lihat Hasil Survey</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[
-            styles.actionButton,
-            { backgroundColor: survey.is_active ? '#E8947D' : '#D4B896' },
-          ]}
-          onPress={toggleStatus}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.actionButtonText}>
-            {survey.is_active ? 'Nonaktifkan Survey' : 'Aktifkan Survey'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={deleteSurvey}
-          disabled={isDeleting}
-          activeOpacity={0.85}
-        >
-          {isDeleting ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <Text style={styles.deleteButtonText}>Hapus Survey</Text>
+          {survey.description && (
+            <View style={styles.descriptionCard}>
+              <Text style={styles.cardTitle}>Deskripsi</Text>
+              <Text style={styles.descriptionText}>{survey.description}</Text>
+            </View>
           )}
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.backButtonText}>← Kembali</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {survey.questions && survey.questions.length > 0 && (
+            <View style={styles.questionsSection}>
+              <Text style={styles.sectionHeader}>Pertanyaan ({survey.questions.length})</Text>
+              {survey.questions.map((question, index) => (
+                <View key={question.id} style={styles.questionCard}>
+                  <Text style={styles.questionNumber}>Pertanyaan {index + 1}</Text>
+                  <Text style={styles.questionText}>{question.question_text}</Text>
+                  <Text style={styles.answerType}>Jawaban: Setuju / Tidak Setuju</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity 
+            style={styles.analyticsButton} 
+            onPress={() => router.push(`/admin/surveys/analytics/${survey.id}`)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.analyticsButtonText}>Lihat Hasil Survey</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[
+              styles.actionButton,
+              { backgroundColor: survey.is_active ? '#E8947D' : '#D4B896' },
+            ]}
+            onPress={toggleStatus}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.actionButtonText}>
+              {survey.is_active ? 'Nonaktifkan Survey' : 'Aktifkan Survey'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={deleteSurvey}
+            disabled={isDeleting}
+            activeOpacity={0.85}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.deleteButtonText}>Hapus Survey</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.backButtonText}>← Kembali</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -273,6 +281,9 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomRightRadius: 30,
+    // Ensure header stays on top
+    zIndex: 10,
+    elevation: 5,
   },
   headerGreeting: {
     fontSize: 14,
@@ -284,6 +295,12 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '700',
     color: '#fff',
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
   },
   content: {
     padding: 20,
